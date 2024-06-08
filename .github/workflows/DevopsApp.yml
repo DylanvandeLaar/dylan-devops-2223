@@ -29,7 +29,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: ${{ env.app-directory }}
-    - run: npm ci
+    - run: npm install
       working-directory: ${{ env.app-directory }}
     - run: npm run build --if-present
       working-directory: ${{ env.app-directory }}
