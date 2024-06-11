@@ -1,0 +1,80 @@
+kind: Environment
+name: preview
+type: primary
+urlHandle: 8di5qa
+components:
+    -
+        kind: Application
+        name: devopsapp
+        gitRepo: 'https://github.com/DylanvandeLaar/dylan-devops-2223.git'
+        gitBranch: main
+        gitApplicationPath: DevopsApp
+        dockerCompose:
+            build:
+                context: ./DevopsApp
+                dockerfile: Dockerfile
+            command:
+                - npm
+                - run
+                - dev
+            deploy: {  }
+            environment:
+                MESSAGE_QUEUE: 'amqp://messagebus'
+                MONGO_URL: 'mongodb://wordleAppDB:27017'
+                PORT: '5000'
+            ports:
+                - '5000:5000'
+        hosts:
+            -
+                hostname: 'devopsapp-{{ env.base_domain }}'
+                path: /
+                servicePort: 5000
+    -
+        kind: Application
+        name: loggingapi
+        gitRepo: 'https://github.com/DylanvandeLaar/dylan-devops-2223.git'
+        gitBranch: main
+        gitApplicationPath: LoggingAPI
+        dockerCompose:
+            build:
+                context: ./LoggingAPI
+                dockerfile: Dockerfile
+            command:
+                - npm
+                - start
+            deploy: {  }
+            environment:
+                MESSAGE_QUEUE: 'amqp://messagebus'
+                MONGO_URL: 'mongodb://loggingdb:27017'
+                PORT: '5030'
+            ports:
+                - '5030:5030'
+        hosts:
+            -
+                hostname: 'loggingapi-{{ env.base_domain }}'
+                path: /
+                servicePort: 5030
+    -
+        kind: Service
+        name: messagebus
+        dockerCompose:
+            healthcheck:
+                test:
+                    - CMD-SHELL
+                    - 'rabbitmq-diagnostics -q ping'
+                timeout: 5s
+                interval: 5s
+                retries: 5
+            image: 'rabbitmq:latest'
+            ports:
+                - '4369:4369'
+                - '5671:5671'
+                - '5672:5672'
+                - '25672:25672'
+                - '15671:15671'
+                - '15672:15672'
+        hosts:
+            -
+                hostname: 'messagebus-{{ env.base_domain }}'
+                path: /
+                servicePort: 4369
