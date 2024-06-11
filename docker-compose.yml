@@ -8,6 +8,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    ports:
+    - "4369:4369"
+    - "5671:5671"
+    - "5672:5672"
+    - "25672:25672"
+    - "15671:15671"
+    - "15672:15672"
 
   devopsapp:
     build: ./DevopsApp
