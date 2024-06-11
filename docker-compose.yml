@@ -49,3 +49,15 @@ services:
       - PORT=5030
       - MONGO_URL=mongodb://loggingdb:27017
       - MESSAGE_QUEUE=amqp://messagebus
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    ports:
+      - 9090:9090
+    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+
+volumes:
+  prometheus-data:
