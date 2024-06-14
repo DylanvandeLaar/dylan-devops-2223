@@ -25,12 +25,21 @@ services:
       restart_policy:
         condition: on-failure
     depends_on:
+      devopsappdb:
+        condition: service_started
       messagebus:
         condition: service_healthy
     environment:
       - PORT=5000
-      - MONGO_URL=mongodb://wordleAppDB:27017
+      - MONGO_URL=mongodb://devopsAppDB:27017
       - MESSAGE_QUEUE=amqp://messagebus
+
+  devopsappdb:
+    image: "mongo:latest"
+    ports:
+      - "27020:27017"
+    volumes:
+      - ./DevopsAppData:/data/db
 
   loggingapi:
     build: ./LoggingAPI
@@ -43,12 +52,21 @@ services:
     depends_on:
       devopsapp:
         condition: service_started
+      loggingdb:
+        condition: service_started
       messagebus:
         condition: service_healthy
     environment:
       - PORT=5030
       - MONGO_URL=mongodb://loggingdb:27017
       - MESSAGE_QUEUE=amqp://messagebus
+
+  loggingdb:
+    image: "mongo:latest"
+    ports:
+      - "27030:27017"
+    volumes:
+      - ./LoggingData:/data/db
 
   prometheus:
     image: prom/prometheus:latest
@@ -59,5 +77,12 @@ services:
       - 9090:9090
     command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
 
+  grafana:
+    build: ./grafana
+    ports:
+      - "3000:3000"
+
 volumes:
+  DevopsAppData:
+  LoggingData:
   prometheus-data:
