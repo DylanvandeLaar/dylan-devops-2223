@@ -20,7 +20,7 @@ components:
             deploy: {  }
             environment:
                 MESSAGE_QUEUE: 'amqp://messagebus'
-                MONGO_URL: 'mongodb://wordleAppDB:27017'
+                MONGO_URL: 'mongodb://devopsAppDB:27017'
                 PORT: '5000'
             ports:
                 - '5000:5000'
