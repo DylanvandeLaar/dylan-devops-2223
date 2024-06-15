@@ -30,6 +30,30 @@ components:
                 path: /
                 servicePort: 5000
     -
+        kind: Database
+        name: devopsappdb
+        dockerCompose:
+            image: 'mongo:latest'
+            ports:
+                - '27020:27017'
+    -
+        kind: Application
+        name: grafana
+        gitRepo: 'https://github.com/DylanvandeLaar/dylan-devops-2223.git'
+        gitBranch: main
+        gitApplicationPath: grafana
+        dockerCompose:
+            build:
+                context: ./grafana
+                dockerfile: Dockerfile
+            ports:
+                - '3000:3000'
+        hosts:
+            -
+                hostname: 'grafana-{{ env.base_domain }}'
+                path: /
+                servicePort: 3000
+    -
         kind: Application
         name: loggingapi
         gitRepo: 'https://github.com/DylanvandeLaar/dylan-devops-2223.git'
@@ -55,6 +79,13 @@ components:
                 path: /
                 servicePort: 5030
     -
+        kind: Database
+        name: loggingdb
+        dockerCompose:
+            image: 'mongo:latest'
+            ports:
+                - '27030:27017'
+    -
         kind: Service
         name: messagebus
         dockerCompose:
@@ -78,3 +109,28 @@ components:
                 hostname: 'messagebus-{{ env.base_domain }}'
                 path: /
                 servicePort: 4369
+    -
+        kind: Service
+        name: prometheus
+        dockerCompose:
+            command:
+                - '--web.enable-lifecycle'
+                - '--config.file=/etc/prometheus/prometheus.yml'
+            image: 'prom/prometheus:latest'
+            ports:
+                - '9090:9090'
+        hosts:
+            -
+                hostname: 'prometheus-{{ env.base_domain }}'
+                path: /
+                servicePort: 9090
+        volumes:
+            -
+                name: prometheus-data
+                mount: /prometheus
+                subPath: ''
+volumes:
+    -
+        name: prometheus-data
+        size: 1Gi
+        type: disk
